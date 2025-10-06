@@ -1,0 +1,46 @@
+"
+" Title:  vimscript for VIM
+" Author: Nelson Lima
+" Date:   23-11-2025
+"
+" Signcolumn
+
+set number              " Displays the number of the line
+set relativenumber      " The line numbers are relative
+set signcolumn=yes      " Display sign on the left column
+set updatetime=100      " Sets updatetime to 100
+set clipboard=unnamedplus " Use system clipboard
+
+" Indentation
+
+set autoindent          " Indent new line the same amount as one just typed
+set smartindent         " Correctly indent after brackets
+set shiftround          " Correctly adjusting identation with >> and <<
+set tabstop=2           " Number of columns occupied by a tab
+set softtabstop=2       " Set multiple spaces as tabstops
+set shiftwidth=2        " Width for autoindents
+set expandtab           " Converts tabs to white space
+set backspace=indent,eol,start  " Correctly backspaces on
+
+" Other
+set guicursor=          " Avoid changing the cursorstyle in insert mode
+set mouse=a             " Allow Mouse
+set list lcs=tab:\|\ ,trail:~ "Trail char and indentlines for the languages that the plugin doesnt work.
+
+" Colorshceme
+
+" Choose colorscheme
+colorscheme slate
+" At vim enter, set background to transparent
+autocmd vimenter * hi Normal ctermbg=NONE guibg=NONE
+" At vim enter, set sign column background to transparent
+autocmd vimenter * hi SignColumn ctermbg=NONE guibg=NONE
+autocmd ColorScheme * hi SignColumn ctermbg=NONE guibg=NONE
+" At vim enter, set vertical split line to NONE
+autocmd vimenter * hi VertSplit ctermfg=DarkGrey guifg=DarkGrey
+autocmd vimenter * hi VertSplit ctermbg=DarkGrey guibg=NONE
+syntax on
+
+" Keymaps
+map <F3> <esc>:below term<CR>
+imap <F3> <esc>:below term<CR>

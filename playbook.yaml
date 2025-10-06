@@ -1,0 +1,82 @@
+# vi: ft=yaml.ansible
+---
+- name: Playbook Ansible
+  hosts: all
+  vars_files:
+    - provision.yaml
+  roles:
+    # Comment roles if you need to skip them.
+    # - install-dependencies
+    # - create-users
+    # - configure-system
+    # - hardening
+    # - deploy
+    - debug
+
+    # Docs:
+    #
+    # - install-dependencies
+    #
+    # This role installs all the dependencies to the provided machines.
+    # And the users can put other software by defining a list
+    # called "apt_install" containing all custom extra packages.
+
+    # - create-users
+    #
+    # This role manages users by creating and removing
+    # them, including system users such as a deploy user.
+    #
+    # If new users are sudoers, it automaticaly
+    # configures default sudo passwords for them.
+    #
+    # Also, it authorizes ssh keys to access the system.
+    # If there is no ssh key to authorize, ansible  will
+    # generate a pair and put into ssh_keys directory.
+    #
+    # If the user is absent at the list, this role will
+    # remove them.
+    #
+    # To temporarily suspend any user, you just need to
+    # set "/bin/false" or "/usr/sbin/nologin" at their
+    # shell variable.
+
+    # - configure-system
+    #
+    # This role copies configuration files into the system and does
+    # other tasks such as setting the timezone, etc.
+    #
+    # Policies stablished at this role:
+    #
+    # - Remote logins will automatically start a tmux session.
+    # - Tmux detaches after 10 minutes of inactivity,
+    #   closing the ssh session.
+    # - Tmux sessions will not be closed, ensuring the user can
+    #   continue his activities when they return.
+
+    # - hardening
+    #
+    # Stablishes security policies into the provisioned machine.
+    #
+    # Policies stabilished at this role:
+    #
+    # - Closes all ports by default, except the ones previously determined
+    # - Ban ips for 1 hour after 5 failed connection attempts
+    # - SSH root login is not permited
+    # - No password authentication
+    # - No empty passwords
+    # - Only pubkey authentication is permited
+
+    # - deploy
+    #
+    # Deploys projects at the remote machine.
+    #
+    # Tasks included:
+    #
+    # - Copies proxy files
+    # - Clone all projects repos
+    # - Docker composes them
+
+
+    # Only for developing tests:
+    #
+    # - debug

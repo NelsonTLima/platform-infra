@@ -1,0 +1,56 @@
+# vi: ft=yaml.ansible
+---
+- name: Installing dependencies
+  become: true
+  block:
+    - name: Update Apt cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Packages Minimal
+      ansible.builtin.apt:
+        name: "{{ item }}"
+      loop:
+        - git
+        - tmux
+        - htop
+        - vim-gtk3
+        - curl
+        - ca-certificates
+        - acl
+        - python3-cryptography
+
+    - name: Set docker repository
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          # Add Docker's official GPG key:
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+          # Add the repository to Apt sources:
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+      args:
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        name: "{{ item }}"
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+
+    - name: Install other packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+      loop: "{{ apt_install }}"
+      when: apt_install is defined

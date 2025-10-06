@@ -1,0 +1,39 @@
+# Credentials
+
+credentials.auto.tfvars
+
+# vagrant
+
+.vagrant/
+
+# Terraform
+
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+# Ansible
+
+.ansible/
+**/.ansible/
+
+# Project conf
+
+provision.yaml
+debug/
+
+# Generated inventory
+
+inventory.yaml
+
+# Python
+
+.venv/
+
+# vim
+
+*.swp
+
+# MacOs
+
+.DS_Store

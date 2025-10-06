@@ -1,0 +1,48 @@
+# vi: ft=yaml.ansible
+---
+- name: System Setup Playbook
+  become: true
+  block:
+    - name: Change Timezone
+      when: timezone is defined
+      community.general.timezone:
+        name: "{{ timezone }}"
+
+    - name: Change Hostname
+      when: hostname is defined
+      ansible.builtin.hostname:
+        name: "{{ hostname }}"
+
+    - name: Change Hostname at /etc/hosts
+      when: hostname is defined
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.1\.1'
+        line: "127.0.1.1 {{ hostname }} {{ hostname.split('.')[0] }}"
+
+    - name: Copy Terminfo
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/xterm-ghostty.src"
+        dest: /tmp/xterm-ghostty.src
+        mode: "0777"
+
+    - name: Compile Terminfo
+      ansible.builtin.command:
+        cmd: tic -x -o /usr/share/terminfo/ /tmp/xterm-ghostty.src
+        creates: "/usr/share/terminfo/x/xterm-ghostty"
+
+    - name: Copy tmux.conf
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/tmux.conf"
+        dest: "/etc/tmux.conf"
+        owner: root
+        group: root
+        mode: '0664'
+
+    - name: Copy login.sh
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/login.sh"
+        dest: "/etc/profile.d/login.sh"
+        owner: root
+        group: root
+        mode: '0664'

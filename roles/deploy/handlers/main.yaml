@@ -1,0 +1,20 @@
+# vi: ft=yaml.ansible
+---
+- name: Deployment Handlers
+  become: true
+  become_user: deploy
+  block:
+    - name: Proxy compose up
+      community.docker.docker_compose_v2:
+        project_src: "/deploy/proxy"
+        state: present
+        build: always
+
+    - name: Projects compose up
+      community.docker.docker_compose_v2:
+        project_src: "/deploy/{{ project.name }}"
+        state: present
+        build: always
+      loop: "{{ projects }}"
+      loop_control:
+        loop_var: project

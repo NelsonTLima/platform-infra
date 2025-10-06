@@ -1,0 +1,77 @@
+# vi: ft=yaml.ansible
+---
+- name: Certs
+  become: true
+  become_user: deploy
+  block:
+    - name: Ensure cert directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: "/deploy/ssl/certs", mode: "0755" }
+        - { path: "/deploy/ssl/private", mode: "0700" }
+
+    - name: Generate private key (ECDSA P-256) per project
+      community.crypto.openssl_privatekey:
+        path: "/deploy/ssl/private/{{ item.name }}.key"
+        type: ECC
+        curve: secp256r1
+        mode: "0600"
+      loop: "{{ projects }}"
+      loop_control: { label: "{{ item.name }}" }
+
+    - name: Create CSR with SANs per project
+      community.crypto.openssl_csr:
+        path: "/deploy/ssl/private/{{ item.name }}.csr"
+        privatekey_path: "/deploy/ssl/private/{{ item.name }}.key"
+        common_name: "{{ item.domains[0] }}"
+        subject_alt_name: "{{ item.domains | map('regex_replace', '^(.*)$', 'DNS:\\1') | list }}"
+      loop: "{{ projects }}"
+      loop_control: { label: "{{ item.name }}" }
+
+    - name: Create self-signed certificate from CSR per project
+      community.crypto.x509_certificate:
+        path: "/deploy/ssl/certs/{{ item.name }}.crt"
+        csr_path: "/deploy/ssl/private/{{ item.name }}.csr"
+        privatekey_path: "/deploy/ssl/private/{{ item.name }}.key"
+        provider: selfsigned
+        selfsigned_not_after: "+365d"
+        mode: "0644"
+      loop: "{{ projects }}"
+      loop_control: { label: "{{ item.name }}" }
+
+    - name: Copy proxy directory
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/proxy"
+        dest: /deploy/
+        owner: deploy
+        group: deploy
+        mode: "0770"
+      notify: Proxy compose up
+
+    - name: Copy templates to proxy conf.d
+      ansible.builtin.template:
+        src: "{{ role_path }}/templates/proxy_entries.j2"
+        dest: "/deploy/proxy/conf.d/{{ item.name }}.conf"
+        mode: "0660"
+      vars:
+        project: "{{ item }}"
+      loop: "{{ projects }}"
+      loop_control:
+        loop_var: item
+      notify: Proxy compose up
+
+    - name: Git clone repos
+      ansible.builtin.git:
+        repo: "{{ project.repo }}"
+        dest: "/deploy/{{ project.name }}"
+        version: main
+        update: true
+      loop: "{{ projects }}"
+      loop_control:
+        loop_var: project
+      notify: Projects compose up

@@ -1,0 +1,19 @@
+# vi: ft=yaml.ansible
+---
+- name: Hardening handlers
+  become: true
+  block:
+    - name: Restart ufw
+      ansible.builtin.systemd_service:
+        name: ufw
+        state: restarted
+
+    - name: Restart fail2ban
+      ansible.builtin.systemd_service:
+        name: ufw
+        state: restarted
+
+    - name: Restart ssh
+      ansible.builtin.systemd_service:
+        name: ssh
+        state: restarted

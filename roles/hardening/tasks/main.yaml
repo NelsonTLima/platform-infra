@@ -1,0 +1,58 @@
+# vi: ft=yaml.ansible
+---
+- name: Hardening Playbook
+  become: true
+  block:
+    - name: Check Dependencies
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        update_cache: true
+        cache_valid_time: 86400
+      loop:
+        - fail2ban
+        - ufw
+
+    - name: UFW allows ssh
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: UFW allows HTTP and HTTPS
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+      loop:
+        - 80
+        - 443
+
+    - name: UFW allows k3s ports
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+        from_ip: "127.0.0.1"
+      loop:
+        - 6443
+        - 6444
+
+    - name: UFW denies by default
+      community.general.ufw:
+        state: enabled
+        policy: deny
+      notify: Restart ufw
+
+    - name: Copy ssh fail2ban jail
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/jail_ssh.conf"
+        dest: "/etc/fail2ban/jail.d/jail_ssh.conf"
+        owner: root
+        group: root
+        mode: "0600"
+      notify: Restart fail2ban
+
+    - name: Copy sshd_config
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/sshd_config"
+        dest: "/etc/ssh/sshd_config"
+        owner: "root"
+        mode: "0644"
+      notify: Restart ssh

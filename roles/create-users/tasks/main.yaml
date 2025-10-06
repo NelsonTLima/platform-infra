@@ -1,0 +1,134 @@
+# vi: ft=yaml.ansible
+---
+- name: System Setup Playbook
+  become: true
+  block:
+    - name: Create deployment user
+      ansible.builtin.user:
+        name: deploy
+        shell: /bin/bash
+        home: /deploy
+        groups: docker
+        append: true
+        system: true
+        create_home: true
+        umask: "007"
+        generate_ssh_key: true
+        ssh_key_type: ed25519
+        ssh_key_comment: "deploy@{{ domain }}"
+
+    - name: Create users
+      ansible.builtin.user:
+        name: "{{ user.name }}"
+        shell: /bin/bash
+        home: "{{ user.home | default(omit) }}"
+        groups: "{{ user.groups | default(omit) }}"
+        append: "{{ user.append | default(true) }}"
+        generate_ssh_key: "{{ user.generate_ssh_key | default(false) }}"
+        ssh_key_type: ed25519
+        umask: "077"
+        state: "{{ user.state | default('present') }}"
+        password: $6$d5UVW/6FSVAYVjD2$7LMZiDAcVNUauZLVbKewQDR0KblQVp.SljK086emhmzsBQgMd/M60Ee16gkAmNOTjzZZ6u147OoZdHkWnJydh0
+        update_password: on_create
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+
+    - name: Copy .vimrc
+      become: true
+      become_user: "{{ user.name }}"
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/vimrc"
+        dest: "~/.vimrc"
+        owner: "{{ user.name }}"
+        group: "{{ user.name }}"
+        mode: "0644"
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+
+    - name: Copy .bashrc
+      become: true
+      become_user: "{{ user.name }}"
+      ansible.builtin.copy:
+        src: "{{ role_path }}/files/bashrc"
+        dest: "~/.bashrc"
+        owner: "{{ user.name }}"
+        group: "{{ user.name }}"
+        mode: "0644"
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+
+    - name: Ensure ~/.ssh directory exists for each user
+      become: true
+      become_user: "{{ user.name }}"
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+        label: "{{ user.name }}"
+      ansible.builtin.file:
+        path: "~/.ssh"
+        state: directory
+        mode: "0700"
+        owner: "{{ user.name }}"
+        group: "{{ user.name }}"
+
+    - name: Authorize public keys
+      loop: "{{ q('subelements', users, 'authorized_keys', {'skip_missing': True}) }}"
+      loop_control:
+        loop_var: pair
+        label: "{{ pair[0].name }} → {{ pair[1] }}"
+      vars:
+        user: "{{ pair[0] }}"
+        public_key: "{{ pair[1] | default(omit) }}"
+      ansible.posix.authorized_key:
+        user: "{{ user.name }}"
+        key: "{{ lookup('file', public_key) }}"
+        state: present
+
+    - name: Copy private keys
+      become: true
+      become_user: "{{ user.name }}"
+      loop: "{{ q('subelements', users, 'copy_keys', {'skip_missing': True}) }}"
+      loop_control:
+        loop_var: pair
+        label: "{{ pair[0].name }} → {{ pair[1] }}"
+      vars:
+        user: "{{ pair[0] }}"
+        private_key: "{{ pair[1] | default(omit) }}"
+      ansible.builtin.copy:
+        src: "{{ private_key }}"
+        dest: "~/.ssh"
+        mode: "0600"
+        owner: "{{ user.name }}"
+        group: "{{ user.name }}"
+
+    - name: Copy ssh config file
+      become: true
+      become_user: "{{ user.name }}"
+      loop: "{{ users }}"
+      loop_control:
+        loop_var: user
+      when: user.ssh_config is defined
+      ansible.builtin.copy:
+        src: "{{ user.ssh_config }}"
+        dest: "~/.ssh/config"
+        mode: "0600"
+        owner: "{{ user.name }}"
+        group: "{{ user.name }}"
+
+    - name: Get all users
+      ansible.builtin.getent:
+        database: passwd
+
+    - name: Remove unlisted users
+      ansible.builtin.user:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ getent_passwd | dict2items }}"
+      when:
+        - (item.value[1] | int) > 999
+        - item.key != 'root'
+        - item.key != 'nobody'
+        - item.key not in (users | map(attribute='name') | list)

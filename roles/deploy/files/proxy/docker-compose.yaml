@@ -1,0 +1,22 @@
+name: main_proxy
+
+networks:
+  proxy_bus:
+    name: proxy_bus
+    driver: bridge
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /deploy/ssl/certs/:/etc/ssl/certs
+      - /deploy/ssl/private/:/etc/ssl/private
+    networks:
+      - proxy_bus
+    restart: unless-stopped
