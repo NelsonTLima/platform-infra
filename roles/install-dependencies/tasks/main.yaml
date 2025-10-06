@@ -19,6 +19,7 @@
         - ca-certificates
         - acl
         - python3-cryptography
+        - python3-kubernetes
 
     - name: Set docker repository
       ansible.builtin.shell:

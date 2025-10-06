@@ -13,9 +13,34 @@
         system: true
         create_home: true
         umask: "007"
-        generate_ssh_key: true
-        ssh_key_type: ed25519
-        ssh_key_comment: "deploy@{{ domain }}"
+
+    - name: Make sure /deploy/.ssh exists
+      ansible.builtin.file:
+        path: /deploy/.ssh
+        state: directory
+        owner: deploy
+        group: deploy
+        mode: "0770"
+
+    - name: Copy deploy ssh pvt key
+      become: true
+      become_user: deploy
+      ansible.builtin.copy:
+        src: "{{ deploy_ssh_keys }}"
+        dest: "~/.ssh/id"
+        mode: "0600"
+        owner: deploy
+        group: deploy
+
+    - name: Copy deploy ssh pub key
+      become: true
+      become_user: deploy
+      ansible.builtin.copy:
+        src: "{{ deploy_ssh_keys }}.pub"
+        dest: "~/.ssh/id.pub"
+        mode: "0600"
+        owner: deploy
+        group: deploy
 
     - name: Create users
       ansible.builtin.user:
