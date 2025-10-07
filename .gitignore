@@ -36,3 +36,7 @@ inventory.yaml
 # MacOs
 
 .DS_Store
+
+argo_password.txt
+secrets.yaml
+secrets.yml

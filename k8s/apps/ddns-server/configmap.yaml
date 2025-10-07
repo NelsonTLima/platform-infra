@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ddns-server-config
+  namespace: ddns-server
+data:
+  POSTGRES_INITDB_ARGS: "--auth-local=password"
+  POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"

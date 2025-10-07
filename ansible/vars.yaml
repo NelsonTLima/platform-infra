@@ -2,7 +2,8 @@ domain: nelsontlima.com
 hostname: nelsontlima.com
 timezone: America/Recife
 
-deploy_ssh_keys: ~/.ssh/id_deploy_ed25519
+deploy_ssh_keys: ~/.ssh/id_deploy_ed25519 # SSH key used for deploying.
+age_key_path: ~/.age/cluster.key  # Age private keys to decode secrets.
 
 users:
 
