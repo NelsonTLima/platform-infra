@@ -12,4 +12,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: ddns-server
-
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuartion: 3m
