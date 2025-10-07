@@ -1,0 +1,10 @@
+projects:
+  - name: ArgoCD web dashboard
+    domains:
+      - { type: A, name: argo.nelsontlima.com, dest: "", proxied: false }
+      - { type: CNAME, name: www.argo.nelsontlima.com, dest: "argo.nelsontlima.com", proxied: false }
+
+  - name: ddns-server
+    domains:
+      - { type: A, name: ddns.nelsontlima.com, dest: "", proxied: false }
+      - { type: CNAME, name: www.ddns.nelsontlima.com, dest: ddns.nelsontlima.com, proxied: false }

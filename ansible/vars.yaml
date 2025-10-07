@@ -1,0 +1,18 @@
+domain: nelsontlima.com
+hostname: nelsontlima.com
+timezone: America/Recife
+
+deploy_ssh_keys: ~/.ssh/id_deploy_ed25519
+
+users:
+
+  # If you need to temporarily suspend any user,
+  # you just need to change shell to /bin/false.
+  # If you need to terminate an user account, you just
+  # need to remove it from this file. If you remove
+  # an user, all his data will be lost. Be careful.
+
+  - name: nelson
+    shell: /bin/bash
+    groups: ["docker", "sudo", "deploy"]
+    authorized_keys: [~/.ssh/id_aws_ed25519.pub]

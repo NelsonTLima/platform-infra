@@ -8,13 +8,13 @@ terraform {
 }
 
 locals {
-  projects_data = yamldecode(file(var.projects_file))
+  domains_file = yamldecode(file(var.app_domains))
 }
 
 
 locals {
-  all_domains = flatten([
-    for i in local.projects_data["projects"] : [
+  domains = flatten([
+    for i in local.domains_file["projects"] : [
       for domain in i.domains : {
         name  = domain.name
         type  = domain.type
@@ -27,7 +27,7 @@ locals {
 
 resource "cloudflare_dns_record" "www"{
   for_each = {
-    for domain in local.all_domains : "${domain.name}" => domain
+    for domain in local.domains : "${domain.name}" => domain
   }
 
   zone_id = var.zone_id

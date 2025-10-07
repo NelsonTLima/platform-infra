@@ -21,12 +21,12 @@ provider "aws" {
 }
 
 module "networking" {
-  source      = "./terraform-modules/networking"
+  source      = "./modules/networking"
   domain      = var.domain
 }
 
 module "compute" {
-  source           = "./terraform-modules/compute"
+  source           = "./modules/compute"
   depends_on       = [module.networking]
   
   domain           = var.domain
@@ -45,8 +45,8 @@ provider "cloudflare" {
 }
 
 module "dns" {
-  source        = "./terraform-modules/dns"
-  projects_file = "${path.root}/provision.yaml"
+  source        = "./modules/dns"
+  app_domains   = "${path.root}/app_domains.yaml"
   zone_id       = var.zone_id
   domain        = var.domain
   ec2_ipv4      = module.compute.ipv4

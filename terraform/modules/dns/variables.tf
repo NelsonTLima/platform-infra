@@ -6,7 +6,7 @@ variable "zone_id" {
   type = string
 }
 
-variable "projects_file" {
+variable "app_domains" {
   type = string
 }
 

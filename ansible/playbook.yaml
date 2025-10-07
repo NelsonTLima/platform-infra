@@ -3,13 +3,13 @@
 - name: Playbook Ansible
   hosts: all
   vars_files:
-    - provision.yaml
+    - vars.yaml
   roles:
     # Comment roles if you need to skip them.
-    # - install-dependencies
-    # - create-users
-    # - configure-system
-    # - hardening
+    - install-dependencies
+    - create-users
+    - configure-system
+    - hardening
     # - deploy
     - debug
 

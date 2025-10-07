@@ -19,7 +19,6 @@ terraform.tfstate.backup
 
 # Project conf
 
-provision.yaml
 debug/
 
 # Generated inventory
