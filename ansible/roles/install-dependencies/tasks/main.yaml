@@ -20,6 +20,7 @@
         - acl
         - python3-cryptography
         - python3-kubernetes
+        - age
 
     - name: Set docker repository
       ansible.builtin.shell:
