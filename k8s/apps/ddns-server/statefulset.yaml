@@ -21,9 +21,9 @@ spec:
             - containerPort: 5432
           envFrom:
             - configMapRef:
-              name: ddns-server-config
+                name: ddns-server-config
             - secretRef:
-              name: ddns-server-secet
+                name: ddns-server-secet
           volumeMounts:
             - name: db-data
               mountPath: /var/lib/postgresql/data
