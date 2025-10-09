@@ -4,5 +4,6 @@ resources:
   - namespace.yaml
   - service.yaml
   - statefulset.yaml
+  - configmap.yaml
 generators:
   - ksops-generator.yaml
