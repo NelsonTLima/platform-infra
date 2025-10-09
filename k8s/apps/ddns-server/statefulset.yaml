@@ -23,7 +23,7 @@ spec:
             - configMapRef:
                 name: ddns-server-config
             - secretRef:
-                name: ddns-server-secet
+                name: ddns-server-secrets
           volumeMounts:
             - name: db-data
               mountPath: /var/lib/postgresql/data
