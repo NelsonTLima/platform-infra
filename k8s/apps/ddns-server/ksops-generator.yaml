@@ -5,6 +5,6 @@ metadata:
   annotations:
     config.kubernetes.io/function: |
       exec:
-        path: ksops
+        path: /usr/local/bin/ksops
 files:
   - secrets.encrypted.yaml
